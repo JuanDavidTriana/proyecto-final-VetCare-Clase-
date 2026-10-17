@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+    "humao.rest-client",
+    "bierner.markdown-mermaid",
+    "angular.ng-template",
+    "ms-azuretools.vscode-docker",
+    "mongodb.mongodb-vscode"
+  ]
+}
