@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-const required = ['MONGO_URI'];
+const required = ['MONGO_URI', 'JWT_SECRET'];
 
 const missing = required.filter((key) => !process.env[key]);
 if (missing.length > 0) {
@@ -14,4 +14,9 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN?.split(',') ?? '*',
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '8h',
+  seedOwner:{
+    name: process.env.SEED_OWNER_NAME ?? 'admin',
+    email: process.env.SEED_OWNER_EMAIL ?? 'owner@vetcare.dev',
+    password: process.env.SEED_OWNER_PASSWORD ?? 'admin123'
+  }
 };
