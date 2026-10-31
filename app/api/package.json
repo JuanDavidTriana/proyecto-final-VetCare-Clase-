@@ -7,7 +7,9 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "seed": "node src/seed.js",
+    "seed:demo": "node src/seed.js --demo"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +37,7 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "verbose": true,
     "setupFiles": [
       "<rootDir>/tests/setup.js"
     ],
