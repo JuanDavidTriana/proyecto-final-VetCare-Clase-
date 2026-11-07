@@ -90,7 +90,7 @@ Cada historia sigue el formato **Como** *rol* **quiero** *acción* **para** *ben
 > Como usuario de VetCare quiero iniciar sesión con correo y contraseña para acceder según mi rol.
 
 **Criterios de aceptación**
-- [ ] POST /api/auth/login devuelve token JWT y { id, name, role }
+- [ ] POST /api/auth/sign-in/email crea una sesión httpOnly y devuelve el usuario
 - [ ] Las credenciales inválidas devuelven 401 con un mensaje genérico
 - [ ] Un usuario desactivado no puede entrar
 - [ ] La contraseña nunca se devuelve en la respuesta
@@ -100,7 +100,7 @@ Cada historia sigue el formato **Como** *rol* **quiero** *acción* **para** *ben
 > Como tutor de una mascota quiero registrarme para consultar la información de mis mascotas.
 
 **Criterios de aceptación**
-- [ ] POST /api/auth/register crea un usuario siempre con rol client
+- [ ] POST /api/auth/sign-up/email crea un usuario siempre con rol client
 - [ ] Un correo duplicado devuelve 409
 - [ ] La contraseña tiene mínimo 8 caracteres y se guarda con hash
 
@@ -109,8 +109,8 @@ Cada historia sigue el formato **Como** *rol* **quiero** *acción* **para** *ben
 > Como usuario autenticado quiero obtener mis datos para que el frontend sepa quién soy.
 
 **Criterios de aceptación**
-- [ ] GET /api/auth/me con un token válido devuelve el usuario
-- [ ] Sin token o con un token inválido devuelve 401
+- [ ] GET /api/auth/get-session con una cookie válida devuelve la sesión del usuario
+- [ ] Sin sesión válida, las rutas protegidas devuelven 401
 
 #### HU-05 · Crear personal de la clínica  `Personal` `3 SP`
 

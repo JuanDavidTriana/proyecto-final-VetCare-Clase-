@@ -1,18 +1,18 @@
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
+import { fromNodeHeaders } from 'better-auth/node';
+import { getAuth } from '../config/auth.js';
 import { AppError } from '../utils/AppError.js';
+import { User } from '../modules/users/user.model.js';
 
-export function authenticate(req, _res, next) {
-  const header = req.headers.authorization ?? '';
-  const [scheme, token] = header.split(' ');
-  if (scheme !== 'Bearer' || !token) throw new AppError('Token requerido', 401);
+export async function authenticate(req, _res, next) {
+  const session = await getAuth().api.getSession({
+    headers: fromNodeHeaders(req.headers),
+  });
+  if (!session) throw new AppError('Sesión requerida', 401);
 
-  try {
-    const payload = jwt.verify(token, env.jwtSecret);
-    req.user = { id: payload.sub, role: payload.role };
-  } catch {
-    throw new AppError('Token inválido o expirado', 401);
-  }
+  const user = await User.findById(session.user.id);
+  if (!user || !user.active) throw new AppError('Sesión inválida o usuario inactivo', 401);
+
+  req.user = { id: user.id, role: user.role };
   next();
 }
 

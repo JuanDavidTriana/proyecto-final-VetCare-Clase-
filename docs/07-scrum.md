@@ -12,7 +12,7 @@ flowchart LR
 | Clase | Sprint que **arranca** | Contenido técnico de la clase | Review de |
 |:-:|---|---|---|
 | 1 | Sprint 0 · Descubrimiento y setup | Requerimientos, historias, arquitectura, Git flow, Docker, CI | — |
-| 2 | Sprint 1 · Backend core | Express por módulos, Mongoose, JWT, roles, zod, supertest | Sprint 0 |
+| 2 | Sprint 1 · Backend core | Express por módulos, Mongoose, Better Auth, roles, zod, supertest | Sprint 0 |
 | 3 | Sprint 2 · Frontend y agenda | Angular Material, guards, interceptor, formularios reactivos | Sprint 1 |
 | 4 | Sprint 3 · Historia clínica y calidad | Tests unitarios, de integración y e2e; OWASP; índices | Sprint 2 |
 | 5 | Sprint 4 · Producción | Docker multi-stage, Railway + Atlas, CD, métricas, logs | Sprint 3 |
@@ -96,7 +96,7 @@ main ← develop ← feature/HU-02-login
 ```
 
 - Las ramas se nombran `feature/HU-XX-descripcion` o `fix/HU-XX-descripcion`.
-- Commits convencionales, por ejemplo `feat(auth): login con JWT (HU-02)`.
+- Commits convencionales, por ejemplo `feat(auth): sesión con Better Auth (HU-02)`.
 - El PR va hacia `develop`. Al final de cada sprint se hace merge de `develop` a `main` con un tag `sprint-N`.
 
 ## Retrospectiva: Start / Stop / Continue

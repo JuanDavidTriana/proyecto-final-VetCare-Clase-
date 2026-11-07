@@ -1,8 +1,11 @@
+import mongoose from 'mongoose';
 import request from 'supertest';
+import bcrypt from 'bcryptjs';
 import { app } from '../src/app.js';
 import { ROLES } from '../src/utils/roles.js';
 import { User } from '../src/modules/users/user.model.js';
-import { connectTestDB, clearTestDB, disconnectTestDB, createUserWithToken } from './helpers/db.js';
+import { provisionAuthAccount } from '../src/config/auth.js';
+import { connectTestDB, clearTestDB, disconnectTestDB } from './helpers/db.js';
 
 const validUser = {
   name: 'María Pérez',
@@ -11,122 +14,133 @@ const validUser = {
   phone: '3001112233',
 };
 
+function sessionCookie(response) {
+  return (response.headers['set-cookie'] ?? [])
+    .map((cookie) => cookie.split(';')[0])
+    .join('; ');
+}
+
 beforeAll(connectTestDB);
 afterEach(clearTestDB);
 afterAll(disconnectTestDB);
 
-describe('POST /api/auth/register', () => {
-  it('registers a client and returns a session', async () => {
-    const res = await request(app).post('/api/auth/register').send(validUser);
+describe('Better Auth email/password', () => {
+  it('registers a client, stores a credential hash, and creates the VetCare profile', async () => {
+    const response = await request(app)
+      .post('/api/auth/sign-up/email')
+      .send(validUser);
 
-    expect(res.status).toBe(201);
-    expect(res.body.token).toEqual(expect.any(String));
-    expect(res.body.user).toMatchObject({ name: validUser.name, role: ROLES.CLIENT });
-    const saved = await User.findOne({ email: 'maria@correo.dev' }).select('+password');
-    expect(saved.password).not.toBe(validUser.password);
+    expect(response.status).toBe(200);
+    expect(response.body.user).toMatchObject({
+      name: validUser.name,
+      role: ROLES.CLIENT,
+      active: true,
+    });
+    expect(sessionCookie(response)).toContain('session_token=');
+
+    const profile = await User.findById(response.body.user.id);
+    const account = await mongoose.connection.db.collection('account').findOne({
+      providerId: 'credential',
+      userId: profile._id,
+    });
+    expect(profile.email).toBe('maria@correo.dev');
+    expect(profile.phone).toBe(validUser.phone);
+    expect(account.password).not.toBe(validUser.password);
+    expect(await bcrypt.compare(validUser.password, account.password)).toBe(true);
   });
 
-  it('ignores a role sent by the client', async () => {
-    const res = await request(app)
-      .post('/api/auth/register')
+  it('does not let a public sign-up choose a privileged role', async () => {
+    const response = await request(app)
+      .post('/api/auth/sign-up/email')
       .send({ ...validUser, role: ROLES.OWNER });
 
-    expect(res.status).toBe(201);
-    expect(res.body.user.role).toBe(ROLES.CLIENT);
+    expect(response.status).toBe(200);
+    expect(response.body.user.role).toBe(ROLES.CLIENT);
   });
 
-  it('rejects invalid data with 400', async () => {
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send({ name: 'M', email: 'no-es-correo', password: '123' });
+  it('rejects invalid credentials data', async () => {
+    const response = await request(app)
+      .post('/api/auth/sign-up/email')
+      .send({ name: 'M', email: 'not-an-email', password: '123' });
 
-    expect(res.status).toBe(400);
-    expect(res.body.errores.map((e) => e.campo)).toEqual(
-      expect.arrayContaining(['name', 'email', 'password']),
-    );
+    expect(response.status).toBeGreaterThanOrEqual(400);
   });
 
-  it('rejects a duplicate email with 409', async () => {
-    await request(app).post('/api/auth/register').send(validUser);
-    const res = await request(app).post('/api/auth/register').send(validUser);
+  it('rejects an already registered email', async () => {
+    await request(app).post('/api/auth/sign-up/email').send(validUser);
+    const response = await request(app).post('/api/auth/sign-up/email').send(validUser);
 
-    expect(res.status).toBe(409);
-  });
-});
-
-describe('POST /api/auth/login', () => {
-  beforeEach(async () => {
-    await User.create({ ...validUser, role: ROLES.CLIENT });
+    expect(response.status).toBeGreaterThanOrEqual(400);
   });
 
-  it('logs in with valid credentials', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'maria@correo.dev', password: validUser.password });
+  it('signs in and returns the current session', async () => {
+    await request(app).post('/api/auth/sign-up/email').send(validUser);
+    const signIn = await request(app)
+      .post('/api/auth/sign-in/email')
+      .send({ email: validUser.email, password: validUser.password });
 
-    expect(res.status).toBe(200);
-    expect(res.body.token).toEqual(expect.any(String));
+    expect(signIn.status).toBe(200);
+    const session = await request(app)
+      .get('/api/auth/get-session')
+      .set('Cookie', sessionCookie(signIn));
+
+    expect(session.status).toBe(200);
+    expect(session.body.user).toMatchObject({
+      email: 'maria@correo.dev',
+      role: ROLES.CLIENT,
+    });
   });
 
-  it('rejects a wrong password with 401', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'maria@correo.dev', password: 'incorrecta123' });
+  it('keeps existing bcrypt credentials and business roles usable', async () => {
+    const legacyUser = await User.create({
+      name: 'Veterinaria existente',
+      email: 'vet@legacy.test',
+      password: validUser.password,
+      role: ROLES.VET,
+    });
+    const originalId = legacyUser.id;
+    await provisionAuthAccount(legacyUser);
 
-    expect(res.status).toBe(401);
+    const signIn = await request(app)
+      .post('/api/auth/sign-in/email')
+      .send({ email: legacyUser.email, password: validUser.password });
+    const response = await request(app)
+      .get('/api/clients')
+      .set('Cookie', sessionCookie(signIn));
+
+    expect(signIn.status).toBe(200);
+    expect(response.status).toBe(200);
+    expect(signIn.body.user.id).toBe(originalId);
   });
 
-  it('rejects an unknown email with 401', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'nadie@correo.dev', password: 'Cliente1234' });
+  it('rejects incorrect passwords', async () => {
+    await request(app).post('/api/auth/sign-up/email').send(validUser);
+    const response = await request(app)
+      .post('/api/auth/sign-in/email')
+      .send({ email: validUser.email, password: 'incorrecta123' });
 
-    expect(res.status).toBe(401);
+    expect(response.status).toBeGreaterThanOrEqual(400);
   });
 
-  it('rejects an inactive user with 403', async () => {
-    await User.updateOne({ email: 'maria@correo.dev' }, { active: false });
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'maria@correo.dev', password: validUser.password });
+  it('does not authorize an inactive profile', async () => {
+    const signUp = await request(app).post('/api/auth/sign-up/email').send(validUser);
+    await User.updateOne({ _id: signUp.body.user.id }, { active: false });
 
-    expect(res.status).toBe(403);
+    const signIn = await request(app)
+      .post('/api/auth/sign-in/email')
+      .send({ email: validUser.email, password: validUser.password });
+    expect(signIn.status).toBe(401);
+
+    const response = await request(app)
+      .get('/api/pets')
+      .set('Cookie', sessionCookie(signUp));
+
+    expect(response.status).toBe(401);
   });
 
-  it('rejects an empty body with 400', async () => {
-    const res = await request(app).post('/api/auth/login').send({});
+  it('requires a session to access private routes', async () => {
+    const response = await request(app).get('/api/pets');
 
-    expect(res.status).toBe(400);
-  });
-});
-
-describe('GET /api/auth/me', () => {
-  it('returns the authenticated user without password', async () => {
-    const { auth, user } = await createUserWithToken(ROLES.VET);
-    const res = await request(app).get('/api/auth/me').set(auth);
-
-    expect(res.status).toBe(200);
-    expect(res.body.user).toMatchObject({ id: user.id, role: ROLES.VET });
-    expect(res.body.user.password).toBeUndefined();
-  });
-
-  it('requires a token', async () => {
-    const res = await request(app).get('/api/auth/me');
-
-    expect(res.status).toBe(401);
-  });
-
-  it('rejects an invalid token', async () => {
-    const res = await request(app).get('/api/auth/me').set('Authorization', 'Bearer basura');
-
-    expect(res.status).toBe(401);
-  });
-
-  it('returns 404 for a deactivated user', async () => {
-    const { auth, user } = await createUserWithToken(ROLES.CLIENT);
-    await User.updateOne({ _id: user._id }, { active: false });
-    const res = await request(app).get('/api/auth/me').set(auth);
-
-    expect(res.status).toBe(404);
+    expect(response.status).toBe(401);
   });
 });

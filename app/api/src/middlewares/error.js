@@ -51,15 +51,6 @@ const handlers = [
             };
         },
     },
-    // JWT
-    {
-        match: (err) => err.name === 'TokenExpiredError',
-        handle: () => ({ status: 401, mensaje: 'Token expirado' }),
-    },
-    {
-        match: (err) => err.name === 'JsonWebTokenError' || err.name === 'NotBeforeError',
-        handle: () => ({ status: 401, mensaje: 'Token inválido' }),
-    },
     // Errores de conexión / timeout con MongoDB
     {
         match: (err) => err.name === 'MongoServerSelectionError' || err.name === 'MongoNetworkError',

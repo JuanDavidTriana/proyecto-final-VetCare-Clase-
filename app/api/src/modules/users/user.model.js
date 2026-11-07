@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
       minlength: 6,
       select: false // La contraseña no se incluirá en las consultas por defecto
     },

@@ -1,6 +1,7 @@
 import { AppError } from '../../utils/AppError.js';
 import { ROLES } from '../../utils/roles.js';
 import { escapeRegex } from '../../utils/validation.js';
+import { provisionAuthAccount, syncAuthUser } from '../../config/auth.js';
 import { User } from '../users/user.model.js';
 import { Pet } from '../pets/pet.model.js';
 
@@ -35,12 +36,20 @@ export async function getClient(id) {
 }
 
 export async function createClient(data) {
-  return User.create({ ...data, role: ROLES.CLIENT });
+  const client = await User.create({ ...data, role: ROLES.CLIENT });
+  try {
+    await provisionAuthAccount(client);
+    return client;
+  } catch (error) {
+    await client.deleteOne();
+    throw error;
+  }
 }
 
 export async function updateClient(id, data) {
   const client = await findClient(id);
   client.set(data);
   await client.save();
+  await syncAuthUser(client);
   return client;
 }

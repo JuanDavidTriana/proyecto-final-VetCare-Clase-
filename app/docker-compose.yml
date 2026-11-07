@@ -32,5 +32,34 @@ services:
       mongo:
         condition: service_healthy
 
+  api:
+    build: ./api
+    container_name: vetcare-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Dentro de la red de Docker, Mongo se llama "mongo", no "localhost"
+      MONGO_URI: mongodb://vetcare:vetcare123@mongo:27017/vetcare?authSource=admin
+      CORS_ORIGIN: http://localhost:4200
+      BETTER_AUTH_URL: http://localhost:3000
+      # Solo para desarrollo local. En producción va como secreto de la plataforma.
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-only-secret-change-me-0123456789abcdef}
+      TZ: America/Bogota
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    container_name: vetcare-web
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
 volumes:
   mongo_data:

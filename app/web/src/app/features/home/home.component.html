@@ -1,0 +1,538 @@
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-b from-emerald-50/60 via-white to-white pt-12 pb-20 lg:pt-16 lg:pb-28">
+  <!-- Subtle decorative ambient blobs -->
+  <div class="absolute top-0 right-1/4 w-96 h-96 bg-emerald-200/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+  <div class="absolute top-1/3 left-0 w-80 h-80 bg-emerald-100/40 rounded-full blur-2xl -z-10 pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      
+      <!-- Left Content Column -->
+      <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+        
+        <!-- Brand Badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/80 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs">
+          <ng-icon name="lucideSparkles" class="text-emerald-600 text-sm" />
+          <span>Clínica Veterinaria Digital · 100% Sin Papeles</span>
+        </div>
+
+        <!-- Main Title -->
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.12]">
+          El mejor cuidado para tu mascota, con la <span class="text-emerald-600 underline decoration-emerald-300 decoration-wavy decoration-2">tranquilidad</span> que mereces.
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
+          Centralizamos la historia clínica, agendamos citas sin demoras y mantenemos el control de vacunas siempre al día. Diseñado con amor y tecnología para veterinarios y tutores.
+        </p>
+
+        <!-- CTAs with Spartan UI Directives -->
+        <div class="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+          <a
+            href="#agendar"
+            hlmBtn
+            variant="default"
+            size="lg"
+            class="w-full sm:w-auto shadow-lg shadow-emerald-600/30 gap-2 text-base font-bold"
+          >
+            <ng-icon name="lucideCalendar" class="text-lg" />
+            <span>Agendar Cita Médica</span>
+          </a>
+
+          <a
+            href="#portal-tutores"
+            hlmBtn
+            variant="outline"
+            size="lg"
+            class="w-full sm:w-auto gap-2 text-base font-bold text-emerald-900"
+          >
+            <ng-icon name="lucideUser" class="text-lg text-emerald-600" />
+            <span>Ingresar como Tutor</span>
+          </a>
+        </div>
+
+        <!-- Trust Highlights -->
+        <div class="pt-6 border-t border-emerald-100/80 grid grid-cols-3 gap-4 text-center lg:text-left">
+          <div>
+            <div class="text-2xl sm:text-3xl font-black text-emerald-700">+1,500</div>
+            <div class="text-xs text-slate-500 font-medium">Pacientes atendidos</div>
+          </div>
+          <div>
+            <div class="text-2xl sm:text-3xl font-black text-emerald-700">4</div>
+            <div class="text-xs text-slate-500 font-medium">Médicos veterinarios</div>
+          </div>
+          <div>
+            <div class="text-2xl sm:text-3xl font-black text-emerald-700">100%</div>
+            <div class="text-xs text-slate-500 font-medium">Historias seguras</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: unDraw Hero Illustration -->
+      <div class="lg:col-span-5 flex justify-center items-center relative">
+        <div class="w-full max-w-lg lg:max-w-none transform hover:scale-[1.02] transition-transform duration-500">
+          <img
+            src="illustrations/undraw-hero-pets.svg"
+            alt="Mascotas y veterinaria VetCare"
+            class="w-full h-auto max-h-[420px] object-contain drop-shadow-md select-none"
+          />
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- LIVE API STATUS VALIDATION CARD (Para validar inmediatamente si la API y DB responden) -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 mb-16 relative z-10">
+  <div hlmCard class="bg-white/95 backdrop-blur-md border-2 border-emerald-200 shadow-xl p-6 rounded-2xl">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <!-- Status Indicator -->
+      <div class="flex items-center gap-4 text-center sm:text-left">
+        @if (apiStatus() === 'checking') {
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-700 animate-spin">
+            <ng-icon name="lucideRefreshCw" class="text-2xl" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900">Validando conexión con el Backend...</span>
+              <span hlmBadge variant="outline" class="text-amber-700 border-amber-300 bg-amber-50">Comprobando</span>
+            </div>
+            <p class="text-xs text-slate-500">Consultando <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">{{ apiEndpoint }}</code></p>
+          </div>
+        } @else if (apiStatus() === 'connected') {
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 shadow-sm shadow-emerald-500/20">
+            <ng-icon name="lucideCheckCircle2" class="text-2xl" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900 text-base">Backend & Base de Datos Conectados</span>
+              <span hlmBadge variant="default" class="bg-emerald-600 text-white">Online</span>
+            </div>
+            <p class="text-xs text-slate-600 mt-0.5">
+              Servicio: <strong class="text-emerald-800">{{ apiDetails()?.service }}</strong> · 
+              Estado DB: <strong class="text-emerald-800">{{ apiDetails()?.db }}</strong> · 
+              Uptime: <span class="text-slate-500">{{ apiDetails()?.uptime }}</span>
+            </p>
+          </div>
+        } @else {
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
+            <ng-icon name="lucideAlertCircle" class="text-2xl text-amber-600" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900 text-base">Backend en espera de ejecución</span>
+              <span hlmBadge variant="outline" class="text-slate-600">Modo Standalone</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Ejecuta <code class="bg-slate-100 px-1 py-0.5 rounded font-mono text-emerald-700">npm run dev</code> en <code class="bg-slate-100 px-1 py-0.5 rounded">app/api</code> para conectar la API en tiempo real.
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Action Button to recheck -->
+      <div class="flex items-center gap-3">
+        <button
+          (click)="checkApiStatus()"
+          hlmBtn
+          variant="secondary"
+          size="sm"
+          class="gap-1.5"
+        >
+          <ng-icon name="lucideRefreshCw" class="text-base text-emerald-700" />
+          <span>Reverificar API</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Services & Pillars Section (Spartan UI Cards) -->
+<section id="servicios" class="py-16 bg-white select-none">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+      <div class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+        <ng-icon name="lucideActivity" />
+        <span>NUESTROS PILARES</span>
+      </div>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        Todo lo que tu clínica y tus pacientes necesitan
+      </h2>
+      <p class="text-slate-600 text-base">
+        Diseñado bajo la visión oficial de VetCare para eliminar el desorden del papel y dar acceso instantáneo a la información.
+      </p>
+    </div>
+
+    <!-- 4 Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      
+      <!-- Card 1 -->
+      <div hlmCard class="hover:border-emerald-500 hover:-translate-y-1 transition-all duration-300">
+        <div hlmCardHeader>
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-2">
+            <ng-icon name="lucideFileText" class="text-2xl" />
+          </div>
+          <h3 hlmCardTitle>Historia Clínica Digital</h3>
+          <p hlmCardDescription>
+            Consultas completas con peso, temperatura, diagnóstico, tratamiento y firma del veterinario en un solo clic.
+          </p>
+        </div>
+        <div hlmCardFooter>
+          <span class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+            Cronología sin límites <ng-icon name="lucideArrowRight" />
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div hlmCard class="hover:border-emerald-500 hover:-translate-y-1 transition-all duration-300">
+        <div hlmCardHeader>
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-2">
+            <ng-icon name="lucideCalendar" class="text-2xl" />
+          </div>
+          <h3 hlmCardTitle>Agenda Inteligente</h3>
+          <p hlmCardDescription>
+            Citas organizadas por cada veterinario. Validación automática para evitar citas duplicadas o choques de horario.
+          </p>
+        </div>
+        <div hlmCardFooter>
+          <span class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+            Turnos sin esperas <ng-icon name="lucideArrowRight" />
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div hlmCard class="hover:border-emerald-500 hover:-translate-y-1 transition-all duration-300">
+        <div hlmCardHeader>
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-2">
+            <ng-icon name="lucideShieldCheck" class="text-2xl" />
+          </div>
+          <h3 hlmCardTitle>Control de Vacunas</h3>
+          <p hlmCardDescription>
+            Seguimiento de dosis aplicadas y cálculo automático de la próxima fecha de vencimiento a 30 días para alertas preventivas.
+          </p>
+        </div>
+        <div hlmCardFooter>
+          <span class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+            Protección garantizada <ng-icon name="lucideArrowRight" />
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div hlmCard class="hover:border-emerald-500 hover:-translate-y-1 transition-all duration-300">
+        <div hlmCardHeader>
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-2">
+            <ng-icon name="lucideUser" class="text-2xl" />
+          </div>
+          <h3 hlmCardTitle>Portal del Tutor</h3>
+          <p hlmCardDescription>
+            Los dueños pueden iniciar sesión para revisar el carnet de sus mascotas, próximas citas y vacunas desde su teléfono.
+          </p>
+        </div>
+        <div hlmCardFooter>
+          <span class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+            Transparencia total <ng-icon name="lucideArrowRight" />
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Deep Dive Feature 1: Historia Clínica Digital con StorySet Illustration -->
+<section id="historia-clinica" class="py-20 bg-emerald-50/40 border-y border-emerald-100/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Illustration Left: unDraw Medical Care / Records -->
+      <div class="lg:col-span-5 order-2 lg:order-1 flex justify-center">
+        <div class="w-full max-w-md">
+          <img
+            src="illustrations/undraw-medical-records.svg"
+            alt="Historia Clínica Digital"
+            class="w-full h-auto max-h-[340px] object-contain drop-shadow-sm select-none"
+          />
+        </div>
+      </div>
+
+      <!-- Content Right -->
+      <div class="lg:col-span-7 order-1 lg:order-2 space-y-6">
+        <span hlmBadge variant="subtle" class="text-emerald-800 bg-emerald-100/90 font-bold">
+          HISTORIAS CLÍNICAS EN 1 CLIC
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Nunca más una receta perdida ni un tratamiento olvidado.
+        </h2>
+        <p class="text-base sm:text-lg text-slate-600 leading-relaxed">
+          Cuando un paciente regresa a la clínica, el veterinario tiene en pantalla toda la evolución médica organizada de forma cronológica: signos vitales, diagnósticos anteriores y medicamentos recetados.
+        </p>
+
+        <!-- Feature List Checkmarks -->
+        <ul class="space-y-3 pt-2">
+          <li class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center mt-0.5 shrink-0">
+              <ng-icon name="lucideCheck" class="text-xs" />
+            </div>
+            <span class="text-sm sm:text-base text-slate-700 font-medium">
+              <strong>Firma profesional del veterinario:</strong> Cada consulta queda asociada al profesional que la atendió sin alteraciones.
+            </span>
+          </li>
+          <li class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center mt-0.5 shrink-0">
+              <ng-icon name="lucideCheck" class="text-xs" />
+            </div>
+            <span class="text-sm sm:text-base text-slate-700 font-medium">
+              <strong>Control de constantes:</strong> Registro de peso (kg) y temperatura (°C) para evaluar la tendencia de salud.
+            </span>
+          </li>
+          <li class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center mt-0.5 shrink-0">
+              <ng-icon name="lucideCheck" class="text-xs" />
+            </div>
+            <span class="text-sm sm:text-base text-slate-700 font-medium">
+              <strong>Búsqueda instantánea de pacientes:</strong> Encuentra a cualquier mascota por su nombre o el documento de su tutor.
+            </span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Deep Dive Feature 2: Agenda & Citas con StorySet Illustration -->
+<section id="agendar" class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Content Left -->
+      <div class="lg:col-span-7 space-y-6">
+        <span hlmBadge variant="subtle" class="text-emerald-800 bg-emerald-100/90 font-bold">
+          AGENDA SIN SOBRECUPOS
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Recepción ágil: citas agendadas en menos de 2 minutos.
+        </h2>
+        <p class="text-base sm:text-lg text-slate-600 leading-relaxed">
+          Los auxiliares pueden registrar al tutor, inscribir la mascota y agendar la consulta con el especialista indicado sin choques de horario. El veterinario consulta su agenda del día en su propio dispositivo.
+        </p>
+
+        <!-- Interactive Appointment Simulator -->
+        <div class="p-6 rounded-2xl bg-emerald-50/70 border border-emerald-200 mt-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 text-sm">Simulador de Agendamiento VetCare</h4>
+            <span class="text-xs text-emerald-700 font-semibold bg-white px-2.5 py-1 rounded-full border border-emerald-200">
+              Demo en vivo
+            </span>
+          </div>
+
+          @if (!bookingSubmitted()) {
+            <form (ngSubmit)="submitBooking()" class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre del Tutor</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="bookingForm.tutorName"
+                    name="tutorName"
+                    required
+                    placeholder="Ej. Juan Pérez"
+                    class="w-full px-3 py-2 text-sm rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre de la Mascota</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="bookingForm.petName"
+                    name="petName"
+                    required
+                    placeholder="Ej. Toby"
+                    class="w-full px-3 py-2 text-sm rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Especie</label>
+                  <select
+                    [(ngModel)]="bookingForm.species"
+                    name="species"
+                    class="w-full px-3 py-2 text-sm rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  >
+                    <option value="dog">Perro 🐕</option>
+                    <option value="cat">Gato 🐈</option>
+                    <option value="bird">Ave 🦜</option>
+                    <option value="rabbit">Conejo 🐇</option>
+                    <option value="other">Otro 🐾</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Motivo de Consulta</label>
+                  <select
+                    [(ngModel)]="bookingForm.reason"
+                    name="reason"
+                    class="w-full px-3 py-2 text-sm rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  >
+                    <option value="Consulta general y chequeo">Consulta general y chequeo</option>
+                    <option value="Vacunación o refuerzo">Vacunación o refuerzo</option>
+                    <option value="Revisión posoperatoria">Revisión posoperatoria</option>
+                    <option value="Desparasitación">Desparasitación preventiva</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                hlmBtn
+                variant="default"
+                size="default"
+                class="w-full mt-2 font-bold"
+              >
+                Simular Agendamiento de Cita
+              </button>
+            </form>
+          } @else {
+            <div class="p-4 rounded-xl bg-white border border-emerald-300 text-center space-y-3 animate-in fade-in">
+              <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
+                <ng-icon name="lucideCheckCircle2" class="text-2xl" />
+              </div>
+              <h5 class="text-base font-bold text-slate-900">¡Cita Pre-Agendada Exitosamente!</h5>
+              <p class="text-xs text-slate-600">
+                Se reservó un cupo para <strong>{{ bookingForm.petName }}</strong> (tutor: {{ bookingForm.tutorName }}). Estado inicial: <span class="text-emerald-700 font-bold">scheduled</span>.
+              </p>
+              <button
+                type="button"
+                (click)="resetBooking()"
+                hlmBtn
+                variant="secondary"
+                size="sm"
+              >
+                Probar otro registro
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Illustration Right: unDraw Calendar / Booking -->
+      <div class="lg:col-span-5 flex justify-center">
+        <div class="w-full max-w-md">
+          <img
+            src="illustrations/undraw-calendar-booking.svg"
+            alt="Agenda Veterinaria Inteligente"
+            class="w-full h-auto max-h-[340px] object-contain drop-shadow-sm select-none"
+          />
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Deep Dive Feature 3: Vacunas & Portal Tutores con StorySet Illustration -->
+<section id="vacunas" class="py-20 bg-emerald-50/40 border-t border-emerald-100/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="portal-tutores" class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Illustration Left: unDraw Mobile Portal -->
+      <div class="lg:col-span-5 order-2 lg:order-1 flex justify-center">
+        <div class="w-full max-w-md">
+          <img
+            src="illustrations/undraw-tutor-portal.svg"
+            alt="Portal Móvil del Tutor"
+            class="w-full h-auto max-h-[340px] object-contain drop-shadow-sm select-none"
+          />
+        </div>
+      </div>
+
+      <!-- Content Right -->
+      <div class="lg:col-span-7 order-1 lg:order-2 space-y-6">
+        <span hlmBadge variant="subtle" class="text-emerald-800 bg-emerald-100/90 font-bold">
+          PORTAL DEL TUTOR & VACUNACIÓN
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          El tutor siempre al tanto de la salud de sus mascotas.
+        </h2>
+        <p class="text-base sm:text-lg text-slate-600 leading-relaxed">
+          Ya no es necesario que el dueño llame para preguntar cuándo le toca la vacuna contra la rabia o parvovirus. Con su cuenta de cliente accede al carnet digital de sus mascotas en cualquier momento.
+        </p>
+
+        <!-- Metrics & Vaccine Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div class="p-4 rounded-xl bg-white border border-emerald-200/80 shadow-xs">
+            <div class="text-emerald-700 font-bold text-sm flex items-center gap-1.5 mb-1">
+              <ng-icon name="lucideShieldCheck" class="text-lg" />
+              <span>Semáforo Preventivo</span>
+            </div>
+            <p class="text-xs text-slate-500">
+              Reporte automático de vacunas que vencen en los próximos 30 días para contacto oportuno.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-emerald-200/80 shadow-xs">
+            <div class="text-emerald-700 font-bold text-sm flex items-center gap-1.5 mb-1">
+              <ng-icon name="lucideHeart" class="text-lg" />
+              <span>Acceso Seguro</span>
+            </div>
+            <p class="text-xs text-slate-500">
+              Solo lectura de sus propios pacientes con aislamiento estricto de datos por tutor.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA Banner (Green & White Branding) -->
+<section class="py-16 bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-800 text-white relative overflow-hidden select-none">
+  <!-- Subtle background glow -->
+  <div class="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-10"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
+    <div class="inline-flex items-center gap-2 bg-emerald-800/80 px-4 py-1.5 rounded-full text-xs font-bold text-emerald-200 border border-emerald-500/40">
+      <ng-icon name="lucideSparkles" />
+      <span>PROYECTO FINAL VETCARE</span>
+    </div>
+    <h2 class="text-3xl sm:text-5xl font-black tracking-tight max-w-3xl mx-auto leading-tight">
+      ¿Listo para llevar el control de tus pacientes sin papeles?
+    </h2>
+    <p class="text-emerald-100 text-base sm:text-lg max-w-2xl mx-auto">
+      Descubre la simplicidad de gestionar citas, historias clínicas y vacunas desde una plataforma ágil, moderna y colaborativa.
+    </p>
+
+    <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a
+        href="#agendar"
+        hlmBtn
+        variant="secondary"
+        size="lg"
+        class="w-full sm:w-auto bg-white text-emerald-800 hover:bg-emerald-50 font-black shadow-lg"
+      >
+        <ng-icon name="lucideCalendar" class="text-lg text-emerald-600" />
+        <span>Agendar una Cita Ahora</span>
+      </a>
+      <a
+        href="#contacto"
+        hlmBtn
+        variant="outline"
+        size="lg"
+        class="w-full sm:w-auto border-emerald-300 text-white hover:bg-emerald-700/60 font-bold"
+      >
+        <ng-icon name="lucidePhone" class="text-lg" />
+        <span>Contactar la Clínica</span>
+      </a>
+    </div>
+  </div>
+</section>

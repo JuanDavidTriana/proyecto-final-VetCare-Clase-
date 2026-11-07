@@ -1,6 +1,6 @@
 # 02 · Roles y permisos
 
-VetCare usa **control de acceso basado en roles (RBAC)**. Cada usuario tiene **un solo rol**, que viaja dentro del JWT y se valida en el backend con el middleware `authorize(...roles)`.
+VetCare usa **control de acceso basado en roles (RBAC)**. Cada usuario tiene **un solo rol**, almacenado en el perfil y validado en el backend con el middleware `authorize(...roles)`.
 
 | Rol | Código en el sistema | Cómo se crea |
 |---|---|---|

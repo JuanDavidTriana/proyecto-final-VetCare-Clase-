@@ -51,12 +51,6 @@ describe('errorHandler', () => {
     expect(res.body.errores[0]).toEqual({ campo: 'name', mensaje: 'requerido' });
   });
 
-  it('maps JWT errors to 401', async () => {
-    const err = Object.assign(new Error('jwt'), { name: 'TokenExpiredError' });
-    const res = await request(build(() => { throw err; })).post('/t');
-    expect(res.status).toBe(401);
-  });
-
   it('hides unknown errors as 500', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const res = await request(build(() => { throw new Error('boom'); })).post('/t');

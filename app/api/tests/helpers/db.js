@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { env } from '../../src/config/env.js';
+import request from 'supertest';
+import { app } from '../../src/app.js';
+import { provisionAuthAccount } from '../../src/config/auth.js';
 import { User } from '../../src/modules/users/user.model.js';
 
 let mongod;
@@ -12,7 +13,9 @@ export async function connectTestDB() {
 }
 
 export async function clearTestDB() {
-  await Promise.all(Object.values(mongoose.connection.collections).map((c) => c.deleteMany({})));
+  if (!mongoose.connection.db) return;
+  const collections = await mongoose.connection.db.collections();
+  await Promise.all(collections.map((collection) => collection.deleteMany({})));
 }
 
 export async function disconnectTestDB() {
@@ -22,7 +25,6 @@ export async function disconnectTestDB() {
 
 let counter = 0;
 
-// Crea un usuario directo en BD y devuelve su token (evita el rate limit del login)
 export async function createUserWithToken(role, overrides = {}) {
   counter += 1;
   const user = await User.create({
@@ -32,6 +34,17 @@ export async function createUserWithToken(role, overrides = {}) {
     role,
     ...overrides,
   });
-  const token = jwt.sign({ sub: user.id, role: user.role }, env.jwtSecret, { expiresIn: '1h' });
-  return { user, token, auth: { Authorization: `Bearer ${token}` } };
+  await provisionAuthAccount(user);
+  const response = await request(app)
+    .post('/api/auth/sign-in/email')
+    .send({ email: user.email, password: overrides.password ?? 'Password123' });
+
+  if (response.status !== 200) {
+    throw new Error(`No se pudo crear una sesión de prueba: ${response.status}`);
+  }
+
+  const cookies = (response.headers['set-cookie'] ?? [])
+    .map((cookie) => cookie.split(';')[0])
+    .join('; ');
+  return { user, auth: { Cookie: cookies } };
 }

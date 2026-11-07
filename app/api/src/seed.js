@@ -10,14 +10,21 @@ import { connectDB } from './config/db.js';
 import { User } from './modules/users/user.model.js';
 import { Pet } from './modules/pets/pet.model.js';
 import { ROLES } from './utils/roles.js';
+import { provisionAuthAccount } from './config/auth.js';
 
 const withDemo = process.argv.includes('--demo');
 
 /** Crea el usuario solo si su correo no existe. */
 async function upsertUser(data) {
-  const existing = await User.findOne({ email: data.email });
-  if (existing) return { user: existing, created: false };
-  return { user: await User.create(data), created: true };
+  const existing = await User.findOne({ email: data.email }).select('+password');
+  if (existing) {
+    if (existing.password) await provisionAuthAccount(existing);
+    return { user: existing, created: false };
+  }
+
+  const user = await User.create(data);
+  await provisionAuthAccount(user);
+  return { user, created: true };
 }
 
 async function seedOwner() {

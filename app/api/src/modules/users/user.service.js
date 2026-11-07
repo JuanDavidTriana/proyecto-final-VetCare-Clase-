@@ -1,6 +1,7 @@
 import { AppError } from '../../utils/AppError.js';
 import { ROLES, STAFF } from '../../utils/roles.js';
 import { escapeRegex } from '../../utils/validation.js';
+import { provisionAuthAccount, syncAuthUser } from '../../config/auth.js';
 import { User } from './user.model.js';
 
 async function findStaff(id) {
@@ -35,7 +36,14 @@ export async function listStaff({ search, role, active, page, limit }) {
 export const getStaff = findStaff;
 
 export async function createStaff(data) {
-  return User.create(data);
+  const user = await User.create(data);
+  try {
+    await provisionAuthAccount(user);
+    return user;
+  } catch (error) {
+    await user.deleteOne();
+    throw error;
+  }
 }
 
 export async function updateStaff(id, data, actor) {
@@ -46,5 +54,6 @@ export async function updateStaff(id, data, actor) {
   }
   user.set(data);
   await user.save();
+  await syncAuthUser(user);
   return user;
 }

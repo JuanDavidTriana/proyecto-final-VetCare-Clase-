@@ -47,7 +47,7 @@ Cada estudiante, durante unos **5 minutos**:
 2. Responde **2 preguntas** del docente sobre el código del equipo. Ejemplos:
    - ¿Qué pasa si un cliente cambia el id en la URL de una mascota ajena?
    - ¿Por qué `app.js` y `server.js` están separados?
-   - ¿Cómo revocarías un JWT antes de que expire?
+   - ¿Cómo revocarías una sesión activa?
    - ¿Qué índice usa la consulta de la agenda del día?
    - ¿Qué hace cada etapa de tu pipeline?
 
