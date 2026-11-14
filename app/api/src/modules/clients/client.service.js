@@ -36,9 +36,10 @@ export async function getClient(id) {
 }
 
 export async function createClient(data) {
-  const client = await User.create({ ...data, role: ROLES.CLIENT });
+  const { password, ...clientData } = data;
+  const client = await User.create({ ...clientData, role: ROLES.CLIENT });
   try {
-    await provisionAuthAccount(client);
+    await provisionAuthAccount(client, password);
     return client;
   } catch (error) {
     await client.deleteOne();

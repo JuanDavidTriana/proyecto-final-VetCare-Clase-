@@ -31,6 +31,6 @@ export const env = {
   seedOwner:{
     name: process.env.SEED_OWNER_NAME ?? 'admin',
     email: process.env.SEED_OWNER_EMAIL ?? 'owner@vetcare.dev',
-    password: process.env.SEED_OWNER_PASSWORD ?? 'admin123'
+    password: process.env.SEED_OWNER_PASSWORD ?? 'Admin1234'
   }
 };

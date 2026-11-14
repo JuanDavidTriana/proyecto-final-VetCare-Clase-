@@ -36,9 +36,10 @@ export async function listStaff({ search, role, active, page, limit }) {
 export const getStaff = findStaff;
 
 export async function createStaff(data) {
-  const user = await User.create(data);
+  const { password, ...userData } = data;
+  const user = await User.create(userData);
   try {
-    await provisionAuthAccount(user);
+    await provisionAuthAccount(user, password);
     return user;
   } catch (error) {
     await user.deleteOne();

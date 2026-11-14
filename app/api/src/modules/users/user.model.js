@@ -1,69 +1,79 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import {ALL_ROLES, ROLES} from '../../utils/roles.js';
+import { ALL_ROLES, ROLES } from '../../utils/roles.js';
+import { hashPassword, verifyPassword } from '../../config/auth.js';
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
     },
     password: {
       type: String,
       required: false,
-      minlength: 6,
-      select: false // La contraseña no se incluirá en las consultas por defecto
+      minlength: 8,
+      maxlength: 128, // Permite almacenar hash de Argon2id sin truncar
+      select: false,  // La contraseña nunca se incluye en consultas por defecto
     },
     role: {
       type: String,
       enum: ALL_ROLES,
-      default: ROLES.CLIENT
+      default: ROLES.CLIENT,
     },
     phone: {
       type: String,
-      trim: true
+      trim: true,
     },
     document: {
       type: String,
-      trim: true
+      trim: true,
     },
     active: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   {
     timestamps: true,
     toJSON: {
-        transform(_doc, ret) {
-            ret.id = ret._id.toString();
-            delete ret._id;
-            delete ret.__v;
-            delete ret.password;
-            return ret;
-        }
-    }
-  }
+      transform(_doc, ret) {
+        ret.id = ret._id.toString();
+        delete ret._id;
+        delete ret.__v;
+        delete ret.password;
+        return ret;
+      },
+    },
+  },
 );
 
-userSchema.index({ role: 1 }, { active : 1 });
+// Índice compuesto corregido para búsquedas de personal y estado
+userSchema.index({ role: 1, active: 1 });
 
 userSchema.pre('save', async function () {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 10);
+  if (this.isModified('password') && this.password) {
+    const isHashed =
+      this.password.startsWith('$argon2') ||
+      this.password.startsWith('$2a$') ||
+      this.password.startsWith('$2b$') ||
+      this.password.startsWith('$2y$');
+
+    if (!isHashed) {
+      this.password = await hashPassword(this.password);
     }
+  }
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+  return verifyPassword({ password: candidatePassword, hash: this.password });
 };
 
 export const User = mongoose.model('User', userSchema);

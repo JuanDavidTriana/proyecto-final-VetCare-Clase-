@@ -11,6 +11,7 @@ import { getAuth } from './config/auth.js';
 import { petRouter } from './modules/pets/pet.router.js';
 import { clientRouter } from './modules/clients/client.router.js';
 import { userRouter } from './modules/users/user.router.js';
+import { appointmentRouter } from './modules/appointments/appointment.router.js';
 
 export const app = express();
 
@@ -47,6 +48,7 @@ app.use(express.json());
 app.use('/api/users', userRouter);
 app.use('/api/clients', clientRouter);
 app.use('/api/pets', petRouter);
+app.use('/api/appointments', appointmentRouter);
 
 // 4. 404: debe ir después de todas las rutas
 app.use(notFound);

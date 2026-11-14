@@ -2,7 +2,13 @@ import {z} from 'zod';
 
 export const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Debe ser un ObjectId válido');
 export const email = z.email('Debe ser un correo electrónico válido');
-export const password = z.string().min(8, 'La contraseña debe tener al menos 8 caracteres');
+export const password = z
+  .string()
+  .min(8, 'La contraseña debe tener al menos 8 caracteres')
+  .max(72, 'La contraseña no puede exceder 72 caracteres')
+  .regex(/[A-Z]/, 'Debe contener al menos una letra mayúscula')
+  .regex(/[a-z]/, 'Debe contener al menos una letra minúscula')
+  .regex(/[0-9]/, 'Debe contener al menos un número');
 export const name = z.string().min(2, 'El nombre debe tener al menos 2 caracteres')
 .max(100, 'El nombre no puede tener más de 100 caracteres');
 export const phone = z.string().regex(/^\d{10}$/, 'Debe ser un número de teléfono válido de 10 dígitos');

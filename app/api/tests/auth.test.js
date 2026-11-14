@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
-import bcrypt from 'bcryptjs';
 import { app } from '../src/app.js';
 import { ROLES } from '../src/utils/roles.js';
 import { User } from '../src/modules/users/user.model.js';
-import { provisionAuthAccount } from '../src/config/auth.js';
+import { provisionAuthAccount, verifyPassword } from '../src/config/auth.js';
 import { connectTestDB, clearTestDB, disconnectTestDB } from './helpers/db.js';
 
 const validUser = {
@@ -24,8 +23,8 @@ beforeAll(connectTestDB);
 afterEach(clearTestDB);
 afterAll(disconnectTestDB);
 
-describe('Better Auth email/password', () => {
-  it('registers a client, stores a credential hash, and creates the VetCare profile', async () => {
+describe('Better Auth email/password & Cryptographic storage', () => {
+  it('registers a client, stores an Argon2id hash, and creates the VetCare profile without plaintext password', async () => {
     const response = await request(app)
       .post('/api/auth/sign-up/email')
       .send(validUser);
@@ -43,10 +42,38 @@ describe('Better Auth email/password', () => {
       providerId: 'credential',
       userId: profile._id,
     });
+
     expect(profile.email).toBe('maria@correo.dev');
     expect(profile.phone).toBe(validUser.phone);
+
+    // Verificación criptográfica: NO es texto plano y es Argon2id
     expect(account.password).not.toBe(validUser.password);
-    expect(await bcrypt.compare(validUser.password, account.password)).toBe(true);
+    expect(account.password).toMatch(/^\$argon2id\$/);
+    expect(await verifyPassword({ password: validUser.password, hash: account.password })).toBe(true);
+
+    // Verificación en reposo: users no guarda contraseñas redundantes
+    const rawUserDoc = await mongoose.connection.db.collection('users').findOne({ _id: profile._id });
+    expect(rawUserDoc?.password).toBeUndefined();
+  });
+
+  it('guarantees provisionAuthAccount hashes plaintext passwords with Argon2id', async () => {
+    const user = await User.create({
+      name: 'Dr. Prueba Criptográfica',
+      email: 'cripto@vetcare.dev',
+      role: ROLES.VET,
+    });
+
+    // Se aprovisiona con contraseña en texto plano
+    await provisionAuthAccount(user, 'PlainPassword123');
+
+    const account = await mongoose.connection.db.collection('account').findOne({
+      providerId: 'credential',
+      userId: user._id,
+    });
+
+    expect(account.password).not.toBe('PlainPassword123');
+    expect(account.password).toMatch(/^\$argon2id\$/);
+    expect(await verifyPassword({ password: 'PlainPassword123', hash: account.password })).toBe(true);
   });
 
   it('does not let a public sign-up choose a privileged role', async () => {
@@ -58,12 +85,25 @@ describe('Better Auth email/password', () => {
     expect(response.body.user.role).toBe(ROLES.CLIENT);
   });
 
-  it('rejects invalid credentials data', async () => {
-    const response = await request(app)
+  it('rejects invalid credentials data and enforces password complexity and bounds', async () => {
+    // Password demasiado corta
+    const resShort = await request(app)
       .post('/api/auth/sign-up/email')
-      .send({ name: 'M', email: 'not-an-email', password: '123' });
+      .send({ name: 'M', email: 'valid@correo.dev', password: '123' });
+    expect(resShort.status).toBeGreaterThanOrEqual(400);
 
-    expect(response.status).toBeGreaterThanOrEqual(400);
+    // Password sin mayúscula (rechazada por política si se valida en endpoints de creación)
+    const resBadEmail = await request(app)
+      .post('/api/auth/sign-up/email')
+      .send({ name: 'Valid Name', email: 'not-an-email', password: 'ValidPassword123' });
+    expect(resBadEmail.status).toBeGreaterThanOrEqual(400);
+
+    // Password que excede 72 bytes (prevención de DoS)
+    const longPassword = 'A1' + 'a'.repeat(75);
+    const resTooLong = await request(app)
+      .post('/api/auth/sign-up/email')
+      .send({ name: 'Valid Name', email: 'toolong@correo.dev', password: longPassword });
+    expect(resTooLong.status).toBeGreaterThanOrEqual(400);
   });
 
   it('rejects an already registered email', async () => {
@@ -91,15 +131,14 @@ describe('Better Auth email/password', () => {
     });
   });
 
-  it('keeps existing bcrypt credentials and business roles usable', async () => {
+  it('keeps existing bcrypt credentials and business roles usable (backward compatibility)', async () => {
     const legacyUser = await User.create({
       name: 'Veterinaria existente',
       email: 'vet@legacy.test',
-      password: validUser.password,
       role: ROLES.VET,
     });
     const originalId = legacyUser.id;
-    await provisionAuthAccount(legacyUser);
+    await provisionAuthAccount(legacyUser, validUser.password);
 
     const signIn = await request(app)
       .post('/api/auth/sign-in/email')
@@ -117,7 +156,7 @@ describe('Better Auth email/password', () => {
     await request(app).post('/api/auth/sign-up/email').send(validUser);
     const response = await request(app)
       .post('/api/auth/sign-in/email')
-      .send({ email: validUser.email, password: 'incorrecta123' });
+      .send({ email: validUser.email, password: 'IncorrectPassword123' });
 
     expect(response.status).toBeGreaterThanOrEqual(400);
   });

@@ -27,17 +27,18 @@ let counter = 0;
 
 export async function createUserWithToken(role, overrides = {}) {
   counter += 1;
+  const password = overrides.password ?? 'Password123';
+  const { password: _p, ...cleanOverrides } = overrides;
   const user = await User.create({
     name: `Usuario ${role} ${counter}`,
     email: `${role}${counter}@test.dev`,
-    password: 'Password123',
     role,
-    ...overrides,
+    ...cleanOverrides,
   });
-  await provisionAuthAccount(user);
+  await provisionAuthAccount(user, password);
   const response = await request(app)
     .post('/api/auth/sign-in/email')
-    .send({ email: user.email, password: overrides.password ?? 'Password123' });
+    .send({ email: user.email, password });
 
   if (response.status !== 200) {
     throw new Error(`No se pudo crear una sesión de prueba: ${response.status}`);

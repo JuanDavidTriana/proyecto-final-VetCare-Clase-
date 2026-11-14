@@ -28,7 +28,12 @@ async function migrateAuthAccounts() {
       providerId: 'credential',
       userId: user._id,
     });
-    await provisionAuthAccount(user);
+    await provisionAuthAccount(user, user.password);
+    // Limpia la contraseña legacy de la colección users para consolidar la fuente única de verdad
+    await mongoose.connection.db.collection('users').updateOne(
+      { _id: user._id },
+      { $unset: { password: 1 } }
+    );
     if (!existingAccount) migrated += 1;
   }
 

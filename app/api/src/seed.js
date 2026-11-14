@@ -14,17 +14,22 @@ import { provisionAuthAccount } from './config/auth.js';
 
 const withDemo = process.argv.includes('--demo');
 
-/** Crea el usuario solo si su correo no existe. */
+/** Crea el usuario solo si su correo no existe y aprovisiona sus credenciales de forma segura. */
 async function upsertUser(data) {
-  const existing = await User.findOne({ email: data.email }).select('+password');
-  if (existing) {
-    if (existing.password) await provisionAuthAccount(existing);
-    return { user: existing, created: false };
+  const { password, ...userData } = data;
+  let user = await User.findOne({ email: userData.email });
+  let created = false;
+
+  if (!user) {
+    user = await User.create(userData);
+    created = true;
   }
 
-  const user = await User.create(data);
-  await provisionAuthAccount(user);
-  return { user, created: true };
+  if (password) {
+    await provisionAuthAccount(user, password);
+  }
+
+  return { user, created };
 }
 
 async function seedOwner() {
