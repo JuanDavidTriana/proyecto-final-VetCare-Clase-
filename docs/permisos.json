@@ -1,0 +1,106 @@
+{
+  "$comment": "Fuente única de verdad de permisos de VetCare. La leen api/tests/permissions.matrix.test.js (RN-02, RN-07) y el menú del portal (RD-09). Si cambias algo aquí, actualiza también docs/02-roles-permisos.md. Decisiones D-01 a D-06 aprobadas por el PO el 2026-11-20 (ver docs/10-plan-trabajo.md, sección 5).",
+  "version": 1,
+  "updatedAt": "2026-11-20",
+  "roles": {
+    "owner": "Dueño",
+    "vet": "Veterinario",
+    "assistant": "Auxiliar",
+    "client": "Tutor"
+  },
+  "access": {
+    "allow": "Permitido sobre cualquier recurso",
+    "own": "Permitido solo sobre sus propios recursos; un recurso ajeno responde 404",
+    "deny": "Prohibido; responde 403",
+    "public": "No requiere sesión"
+  },
+  "expectedStatus": {
+    "noSession": 401,
+    "deny": 403,
+    "ownForeignResource": 404
+  },
+  "endpoints": [
+    { "id": "health", "method": "GET", "path": "/health", "status": "implemented", "public": true },
+
+    { "id": "auth.signUp", "method": "POST", "path": "/api/auth/sign-up/email", "status": "implemented", "public": true, "note": "Siempre crea role=client (RN-04)" },
+    { "id": "auth.signIn", "method": "POST", "path": "/api/auth/sign-in/email", "status": "implemented", "public": true },
+    { "id": "auth.signOut", "method": "POST", "path": "/api/auth/sign-out", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "allow" } },
+    { "id": "auth.session", "method": "GET", "path": "/api/auth/get-session", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "allow" } },
+
+    { "id": "users.list", "method": "GET", "path": "/api/users", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "deny", "assistant": "deny", "client": "deny" } },
+    { "id": "users.create", "method": "POST", "path": "/api/users", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "deny", "assistant": "deny", "client": "deny" } },
+    { "id": "users.get", "method": "GET", "path": "/api/users/:id", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "deny", "assistant": "deny", "client": "deny" } },
+    { "id": "users.update", "method": "PATCH", "path": "/api/users/:id", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "deny", "assistant": "deny", "client": "deny" },
+      "note": "Incluye desactivar con { active: false }; no se borra personal (RN-05)" },
+    { "id": "users.vets", "method": "GET", "path": "/api/users/vets", "status": "planned", "task": "2.4", "decision": "D-05",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" },
+      "note": "Solo id y nombre de veterinarios activos" },
+
+    { "id": "clients.list", "method": "GET", "path": "/api/clients", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "clients.create", "method": "POST", "path": "/api/clients", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "clients.get", "method": "GET", "path": "/api/clients/:id", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "clients.update", "method": "PATCH", "path": "/api/clients/:id", "status": "implemented", "decision": "D-06",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" },
+      "note": "El tutor no edita su perfil en el MVP" },
+
+    { "id": "pets.list", "method": "GET", "path": "/api/pets", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "own" } },
+    { "id": "pets.create", "method": "POST", "path": "/api/pets", "status": "implemented", "decision": "D-01", "pendingBackendChange": "2.4",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "pets.get", "method": "GET", "path": "/api/pets/:id", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "own" } },
+    { "id": "pets.update", "method": "PATCH", "path": "/api/pets/:id", "status": "implemented", "decision": "D-01", "pendingBackendChange": "2.4",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "pets.delete", "method": "DELETE", "path": "/api/pets/:id", "status": "implemented", "decision": "D-03", "pendingBackendChange": "2.4",
+      "roles": { "owner": "allow", "vet": "deny", "assistant": "deny", "client": "deny" } },
+
+    { "id": "appointments.list", "method": "GET", "path": "/api/appointments", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "own" } },
+    { "id": "appointments.create", "method": "POST", "path": "/api/appointments", "status": "implemented", "decision": "D-04", "pendingBackendChange": "2.4",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "appointments.get", "method": "GET", "path": "/api/appointments/:id", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "own" } },
+    { "id": "appointments.update", "method": "PATCH", "path": "/api/appointments/:id", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "appointments.markDone", "method": "PATCH", "path": "/api/appointments/:id/status", "body": { "status": "done" }, "status": "implemented", "decision": "D-02",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "deny", "client": "deny" } },
+    { "id": "appointments.cancel", "method": "PATCH", "path": "/api/appointments/:id/status", "body": { "status": "cancelled" }, "status": "implemented", "decision": "D-04", "pendingBackendChange": "2.4",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "appointments.delete", "method": "DELETE", "path": "/api/appointments/:id", "status": "implemented",
+      "roles": { "owner": "allow", "vet": "deny", "assistant": "deny", "client": "deny" } },
+
+    { "id": "records.list", "method": "GET", "path": "/api/pets/:id/records", "status": "planned", "task": "3.1",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "own" } },
+    { "id": "records.create", "method": "POST", "path": "/api/pets/:id/records", "status": "planned", "task": "3.1",
+      "roles": { "owner": "deny", "vet": "allow", "assistant": "deny", "client": "deny" },
+      "note": "El veterinario se toma de la sesión (RN-03)" },
+
+    { "id": "vaccinations.list", "method": "GET", "path": "/api/pets/:id/vaccinations", "status": "planned", "task": "3.3",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "own" } },
+    { "id": "vaccinations.create", "method": "POST", "path": "/api/pets/:id/vaccinations", "status": "planned", "task": "3.3",
+      "roles": { "owner": "deny", "vet": "allow", "assistant": "allow", "client": "deny" } },
+    { "id": "vaccinations.due", "method": "GET", "path": "/api/vaccinations/due", "status": "planned", "task": "3.4",
+      "roles": { "owner": "allow", "vet": "allow", "assistant": "allow", "client": "deny" } },
+
+    { "id": "dashboard.get", "method": "GET", "path": "/api/dashboard", "status": "planned", "task": "4.2",
+      "roles": { "owner": "allow", "vet": "own", "assistant": "allow", "client": "deny" },
+      "note": "El veterinario solo ve su agenda; el auxiliar, la agenda del día" }
+  ],
+  "menu": [
+    { "label": "Inicio", "path": "/portal", "roles": ["owner", "vet", "assistant", "client"] },
+    { "label": "Agenda", "path": "/portal/agenda", "roles": ["owner", "vet", "assistant"] },
+    { "label": "Mascotas", "labelByRole": { "client": "Mis mascotas" }, "path": "/portal/mascotas", "roles": ["owner", "vet", "assistant", "client"] },
+    { "label": "Tutores", "path": "/portal/tutores", "roles": ["owner", "vet", "assistant"] },
+    { "label": "Personal", "path": "/portal/personal", "roles": ["owner"] },
+    { "label": "Mis citas", "path": "/portal/mis-citas", "roles": ["client"] }
+  ]
+}

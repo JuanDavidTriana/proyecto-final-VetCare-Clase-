@@ -38,6 +38,6 @@ export async function updateStatus(req, res) {
 
 export async function remove(req, res) {
   const { id } = idParamsSchema.parse(req.params);
-  await appointmentService.deleteAppointment(id, req.user);
+  await appointmentService.deleteAppointment(id);
   res.status(204).send();
 }

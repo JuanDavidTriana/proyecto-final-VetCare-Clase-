@@ -79,6 +79,7 @@ Una historia está terminada si:
 - [ ] No hay `console.log` de depuración ni secretos en el código
 - [ ] La documentación está actualizada si cambió la API o el modelo (`docs/06-api.md`, `docs/05-modelo-datos.md`)
 - [ ] El Product Owner la aceptó en la review
+- [ ] Quedó registrada en la bitácora de [`10-plan-trabajo.md`](./10-plan-trabajo.md#7-registro-de-tareas-terminadas) y se informó al equipo que está terminada (comentario en el issue, tarjeta en Done y mensaje en el canal)
 
 ## Estimación
 

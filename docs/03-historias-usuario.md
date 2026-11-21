@@ -177,7 +177,7 @@ Cada historia sigue el formato **Como** *rol* **quiero** *acción* **para** *ben
 
 **Criterios de aceptación**
 - [ ] Formulario reactivo con validaciones
-- [ ] El token se guarda y un interceptor lo envía en cada petición
+- [ ] La sesión viaja en una cookie httpOnly de Better Auth y un interceptor envía las credenciales (`withCredentials`) en cada petición
 - [ ] Un 401 redirige al login
 - [ ] El menú lateral muestra solo las opciones del rol
 - [ ] authGuard y roleGuard protegen las rutas
@@ -209,7 +209,7 @@ Cada historia sigue el formato **Como** *rol* **quiero** *acción* **para** *ben
 **Criterios de aceptación**
 - [ ] GET /api/appointments?date=2026-10-20&vet=:id filtra por día y veterinario
 - [ ] PATCH /api/appointments/:id/status acepta done o cancelled
-- [ ] Solo el vet puede marcar done
+- [ ] Solo el vet o el dueño pueden marcar done (decisión D-02)
 
 #### HU-15 · Pantalla de agenda  `Agenda` `5 SP`
 
@@ -231,7 +231,7 @@ Cada historia sigue el formato **Como** *rol* **quiero** *acción* **para** *ben
 
 **Criterios de aceptación**
 - [ ] POST /api/pets/:id/records con peso, temperatura, diagnóstico, tratamiento y notas
-- [ ] El vet se toma del token y no del cuerpo de la petición
+- [ ] El vet se toma de la sesión (`req.user.id`) y no del cuerpo de la petición
 - [ ] Si viene de una cita, la cita pasa a done
 - [ ] Pantalla con formulario de consulta
 

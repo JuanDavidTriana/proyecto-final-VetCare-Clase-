@@ -189,7 +189,7 @@ export async function updateStatus(id, newStatus, user) {
   ]);
 }
 
-export async function deleteAppointment(id, user) {
+export async function deleteAppointment(id) {
   const appointment = await findAppointmentOr404(id);
   await appointment.deleteOne();
 }

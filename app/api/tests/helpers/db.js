@@ -28,7 +28,8 @@ let counter = 0;
 export async function createUserWithToken(role, overrides = {}) {
   counter += 1;
   const password = overrides.password ?? 'Password123';
-  const { password: _p, ...cleanOverrides } = overrides;
+  const cleanOverrides = { ...overrides };
+  delete cleanOverrides.password;
   const user = await User.create({
     name: `Usuario ${role} ${counter}`,
     email: `${role}${counter}@test.dev`,

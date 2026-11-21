@@ -1,0 +1,79 @@
+# CI de VetCare · T-04 (HU-20 · RD-16)
+# Corre en cada pull request y en cada push a main y develop. Cada carpeta tiene su propio job.
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+# En ramas de trabajo se cancela el run anterior; en main y develop cada merge se verifica completo.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+
+jobs:
+  api:
+    name: API · lint y tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: app/api
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/api/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Los tests usan mongodb-memory-server: no necesitan MongoDB ni secretos.
+      - name: Tests (unitarios e integración)
+        run: npm test
+
+  web:
+    name: Web · build y tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: app/web
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/web/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # RD-16: el build falla si hay errores o advertencias (presupuesto incluido).
+      # Angular termina con exit 0 ante advertencias de presupuesto, por eso se revisa la salida.
+      - name: Build de producción (RD-16)
+        run: |
+          set -o pipefail
+          npx ng build --configuration production 2>&1 | tee build.log
+          if grep -qiE "warning|budget" build.log; then
+            echo "::error::RD-16: ng build terminó con advertencias"
+            exit 1
+          fi
+
+      - name: Tests unitarios
+        run: npx ng test --watch=false
+
+      # Pendiente: lint de Angular con @angular-eslint (puerta G1 y RD-12).
+      # Tarea 2.12 de docs/10-plan-trabajo.md. El proyecto web todavía no tiene script "lint".

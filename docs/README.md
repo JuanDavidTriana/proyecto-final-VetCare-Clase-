@@ -12,6 +12,7 @@
 | 07 | [Scrum](./07-scrum.md) | ¿Cómo trabajamos como equipo? |
 | 08 | [Rúbrica](./08-rubrica.md) | ¿Cómo se evalúa? |
 | 09 | [Plan del portal clínico](./09-plan-portal-clinico.md) | ¿Cómo construimos el frontend del portal (Angular + Spartan UI) con lo que ya tiene la API? |
+| 10 | [Plan de trabajo](./10-plan-trabajo.md) | ¿Qué falta, en qué sprint, con qué modelo de IA y cómo validamos las reglas? ¿Qué tareas ya terminamos? |
 | — | [Reglas de diseño](../app/web/AGENTS.md) | ¿Cómo se ve VetCare? Colores, tipografía, componentes, estados y textos del frontend |
 | ADR | [Decisiones de arquitectura](./adr/) | ¿Por qué elegimos lo que elegimos? |
 

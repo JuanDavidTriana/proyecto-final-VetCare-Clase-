@@ -14,7 +14,7 @@ La API necesita autenticación de correo y contraseña, sesiones revocables y au
 - Mantener los perfiles de VetCare en Mongoose y compartir el ObjectId entre el perfil y el usuario de Better Auth.
 - Conservar compatibilidad de hashes configurando bcrypt (10 rondas) como algoritmo de contraseña.
 - Importar las cuentas existentes con `npm run auth:migrate` antes de desplegar esta versión. La importación es idempotente y conserva IDs y hashes.
-- Las sesiones JWT emitidas por la versión anterior no se migran; cada usuario debe iniciar sesión nuevamente.
+- La API no emite ni acepta JWT: la única forma de autenticarse es la sesión de Better Auth en cookie httpOnly.
 - La autorización consulta el rol y el estado activo del perfil Mongoose en cada petición protegida.
 
 ## Consecuencias

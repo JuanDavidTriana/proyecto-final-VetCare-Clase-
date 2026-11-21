@@ -46,7 +46,7 @@ Set-Location app\api
 npm run auth:migrate
 ```
 
-La migración copia el hash bcrypt existente y conserva el ObjectId de cada perfil para no romper las referencias de mascotas. Es idempotente y no cambia contraseñas. Las sesiones JWT antiguas dejan de funcionar; los usuarios deberán iniciar sesión de nuevo.
+La migración copia el hash bcrypt existente y conserva el ObjectId de cada perfil para no romper las referencias de mascotas. Es idempotente y no cambia contraseñas. Después de la migración, cada usuario inicia sesión y recibe una sesión de Better Auth.
 
 ### Personal (`/api/users`)
 
@@ -56,6 +56,7 @@ La migración copia el hash bcrypt existente y conserva el ObjectId de cada perf
 | POST | `/` | owner | Crea usuarios con rol `vet` o `assistant` |
 | GET | `/:id` | owner | Consulta personal |
 | PATCH | `/:id` | owner | Actualiza datos o desactiva personal |
+| GET | `/vets` | owner, vet, assistant | Solo id y nombre de veterinarios activos (planificado, tarea 2.4) |
 
 ### Tutores (`/api/clients`)
 
@@ -71,10 +72,10 @@ La migración copia el hash bcrypt existente y conserva el ObjectId de cada perf
 | Método | Ruta | Roles | Notas |
 |---|---|---|---|
 | GET | `/` | todos | Un cliente solo ve sus mascotas |
-| POST | `/` | owner, vet, assistant, client | El personal indica `owner`; un cliente queda como tutor |
+| POST | `/` | owner, vet, assistant | El personal indica `owner` (tutor) |
 | GET | `/:id` | todos | Un cliente solo ve sus mascotas |
-| PATCH | `/:id` | todos | Restringido a mascotas accesibles por el usuario |
-| DELETE | `/:id` | owner, vet, assistant | Elimina una mascota |
+| PATCH | `/:id` | owner, vet, assistant | Edita los datos de la mascota |
+| DELETE | `/:id` | owner | Elimina una mascota |
 
 ### Historias clínicas y vacunas (planificado)
 
@@ -86,15 +87,24 @@ La migración copia el hash bcrypt existente y conserva el ObjectId de cada perf
 | POST | `/api/pets/:id/vaccinations` | vet, assistant | Registra una vacuna |
 | GET | `/api/vaccinations/due` | owner, vet, assistant | Busca vacunas próximas a vencer |
 
-### Citas y dashboard (planificado)
+### Citas (`/api/appointments`)
+
+| Método | Ruta | Roles | Notas |
+|---|---|---|---|
+| GET | `/` | todos | Filtros `date` (YYYY-MM-DD), `vet`, `pet`, `status`, `page`, `limit`; el cliente solo ve las citas de sus mascotas |
+| POST | `/` | owner, vet, assistant | Exige `pet`, `vet`, `date` y `reason`; la fecha no puede estar en el pasado; choque con otra cita del mismo veterinario a menos de 30 min → 409 |
+| GET | `/:id` | todos | El cliente solo ve las de sus mascotas (una ajena responde 404) |
+| PATCH | `/:id` | owner, vet, assistant | Reprograma (fecha, veterinario, mascota o motivo) |
+| PATCH | `/:id/status` | `done`: owner, vet · `cancelled`: owner, vet, assistant | Cambia el estado |
+| DELETE | `/:id` | owner | Elimina la cita |
+
+### Dashboard (planificado)
 
 | Método | Ruta | Roles | Descripción |
 |---|---|---|---|
-| GET | `/api/appointments` | todos | Lista citas; el cliente solo ve las suyas |
-| POST | `/api/appointments` | owner, vet, assistant | Programa una cita |
-| PATCH | `/api/appointments/:id` | owner, vet, assistant | Reprograma una cita |
-| PATCH | `/api/appointments/:id/status` | vet, assistant | Actualiza el estado |
-| GET | `/api/dashboard` | owner, vet | Devuelve indicadores de la clínica |
+| GET | `/api/dashboard` | owner, vet, assistant | Indicadores de la clínica; el veterinario ve su agenda |
+
+> La tabla completa de permisos por rol está en [`permisos.json`](./permisos.json). Hasta la tarea 2.4 el backend todavía permite al cliente crear y editar sus mascotas, agendar y cancelar sus citas, y a todo el personal eliminar mascotas.
 
 ## Ejemplo de registro
 

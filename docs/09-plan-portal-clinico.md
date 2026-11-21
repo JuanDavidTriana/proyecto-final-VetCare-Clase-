@@ -22,13 +22,13 @@ Será **una sola app con layout por rol**: el personal (dueño / veterinario / a
 ## Revisión requerida
 
 > [!IMPORTANT]
-> **Único cambio en el backend:** un endpoint nuevo de solo lectura, `GET /api/users/vets`, para cualquier usuario autenticado. Devuelve solo `id` y `name` de los veterinarios activos. Hace falta para elegir veterinario al agendar, porque `GET /api/users` es solo para el dueño. No expone correo, teléfono ni documento.
+> **Único cambio en el backend:** un endpoint nuevo de solo lectura, `GET /api/users/vets`, para el personal (dueño, veterinario y auxiliar). Devuelve solo `id` y `name` de los veterinarios activos. Hace falta para elegir veterinario al agendar, porque `GET /api/users` es solo para el dueño. No expone correo, teléfono ni documento.
 
 > [!IMPORTANT]
 > **Sesión basada en cookies, no en token.** Better Auth usa una cookie httpOnly, así que *no* guardamos tokens en `localStorage`. Un interceptor agrega `withCredentials: true` y, ante un 401, redirige a `/login`. Esto cumple la intención de HU-11 de forma más segura (OWASP A07).
 
-> [!WARNING]
-> **El backend y la matriz de roles no coinciden en un punto.** La matriz (`docs/02-roles-permisos.md`) dice que el cliente **no** crea ni edita mascotas. El backend actual **sí lo permite** (sobre sus propias mascotas, y hay un test que lo cubre). El plan **sigue la matriz en la interfaz**: el cliente ve sus mascotas en modo solo lectura. Si prefieres que el cliente pueda registrar sus mascotas, dímelo y activo el botón.
+> [!NOTE]
+> **Diferencia resuelta con la decisión D-01:** el cliente ve sus mascotas en solo lectura. El backend todavía permite que el cliente cree y edite sus mascotas; se ajusta en la tarea 2.4 de [`docs/10-plan-trabajo.md`](./10-plan-trabajo.md).
 
 ### Matriz que aplicará la interfaz
 
@@ -36,19 +36,17 @@ Será **una sola app con layout por rol**: el personal (dueño / veterinario / a
 |---|:-:|:-:|:-:|:-:|
 | Inicio del portal (resumen) | ✅ | ✅ (su agenda de hoy) | ✅ (agenda de hoy) | ✅ (sus próximas citas) |
 | Agenda: ver / filtrar | ✅ | ✅ | ✅ | 🔒 Mis citas |
-| Agenda: crear | ✅ | ✅ | ✅ | ✅ (solo sus mascotas)¹ |
+| Agenda: crear | ✅ | ✅ | ✅ | ❌ |
 | Agenda: reprogramar | ✅ | ✅ | ✅ | ❌ |
-| Agenda: marcar atendida | ✅² | ✅ | ❌ | ❌ |
-| Agenda: cancelar | ✅ | ✅ | ✅ | ✅ (sus citas) |
+| Agenda: marcar atendida | ✅ | ✅ | ❌ | ❌ |
+| Agenda: cancelar | ✅ | ✅ | ✅ | ❌ |
 | Agenda: eliminar | ✅ | ❌ | ❌ | ❌ |
 | Mascotas: listar, ver, crear, editar | ✅ | ✅ | ✅ | 🔒 solo lectura |
-| Mascotas: eliminar | ✅ | ✅³ | ✅³ | ❌ |
+| Mascotas: eliminar | ✅ | ❌ | ❌ | ❌ |
 | Tutores: listar, crear, editar, activar/desactivar | ✅ | ✅ | ✅ | ❌ |
 | Personal: listar, crear, editar, desactivar | ✅ | ❌ | ❌ | ❌ |
 
-¹ El backend ya lo permite, valida que la mascota sea suya y aplica la ventana de 30 min.
-² El backend acepta que el dueño marque `done`. Si quieres seguir la matriz estricta (solo el veterinario), lo oculto para el dueño.
-³ El backend permite eliminar mascotas a todo el personal (`authorize(...STAFF)`), aunque la matriz dice solo el dueño. La interfaz mostrará el botón **solo al dueño**.
+Matriz alineada con las decisiones D-01 a D-06 (ver [`permisos.json`](./permisos.json)).
 
 ---
 
@@ -97,8 +95,8 @@ Exponer `/vets` **antes** del `authorize(OWNER)` global:
 -userRouter.use(authenticate, authorize(ROLES.OWNER));
 +userRouter.use(authenticate);
 +
-+// Lista mínima de veterinarios activos para agendar (cualquier usuario autenticado)
-+userRouter.get('/vets', controller.listVets);
++// Lista mínima de veterinarios activos para agendar (solo personal)
++userRouter.get('/vets', authorize(...STAFF), controller.listVets);
 +
 +// Gestión del personal (vets y asistentes): solo el dueño
 +userRouter.use(authorize(ROLES.OWNER));
@@ -116,7 +114,7 @@ export async function listVets(_req, res) { res.json({ items: await userService.
 
 #### [NEW] tests/users-vets.test.js
 - 401 sin sesión.
-- El cliente recibe solo `{ id, name }` (sin `email`/`phone`).
+- El personal recibe solo `{ id, name }` (sin `email`/`phone`) y el cliente recibe 403.
 - No incluye veterinarios inactivos ni otros roles.
 - `GET /api/users` sigue devolviendo 403 a quien no sea dueño (prueba de regresión).
 
@@ -224,12 +222,12 @@ const MENU: MenuItem[] = [
 - **[NEW] agenda.component**: selector de día (‹ hoy ›), filtro por veterinario (`/users/vets`) y por estado. Lista ordenada por hora con mascota, tutor, veterinario, motivo y `status-badge`. El veterinario arranca filtrado en sí mismo.
 - **[NEW] appointment-form.dialog**: mascota (búsqueda contra `/pets?search=`), veterinario, fecha y hora (`datetime-local`, `min=ahora`) y motivo. Un 409 se muestra en el campo de hora: *"El veterinario ya tiene una cita en ese horario (ventana de 30 min)"*. Sirve para crear y reprogramar.
 - Acciones por fila según la matriz: **Atender** (`done`), **Cancelar** (`cancelled`, con confirmación), **Reprogramar**, **Eliminar** (dueño).
-- **[NEW] my-appointments.component** (cliente): próximas e historial, con botón "Agendar cita" que usa el mismo diálogo limitado a sus mascotas, y "Cancelar".
+- **[NEW] my-appointments.component** (cliente): muestra próximas citas e historial en solo lectura, sin botones de agendar ni cancelar (D-04).
 
 #### Mascotas: `features/pets/` (HU-12)
 - **[NEW] pets-list.component**: tabla con búsqueda (debounce 300 ms), filtro de especie, paginación, estados de carga y vacío. Para el cliente el título es "Mis mascotas" y no hay botón de crear.
 - **[NEW] pet-form.dialog**: nombre, especie, raza, sexo, fecha de nacimiento (≤ hoy), peso (≥ 0), notas y tutor (búsqueda en `/clients`, solo al crear y solo para el personal).
-- **[NEW] pet-detail.component**: datos, tutor con su teléfono, próximas citas (`/appointments?pet=:id`) y botones de editar, agendar y eliminar. Deja una pestaña "Historia clínica · próximamente".
+- **[NEW] pet-detail.component**: datos, tutor con su teléfono, próximas citas (`/appointments?pet=:id`) y botones según el rol: editar y agendar para el personal, eliminar solo para el dueño (D-03) y ninguno para el cliente (D-01, D-04). Deja una pestaña "Historia clínica · próximamente".
 
 #### Tutores: `features/clients/` (HU-07, HU-12)
 - **[NEW] clients-list.component**: búsqueda por nombre, correo, documento o teléfono; filtro activo/inactivo; paginación.
@@ -292,6 +290,6 @@ cd app; docker compose up -d --build; docker compose exec api npm run seed
 2. Agendar otra cita con el mismo veterinario 15 min después → se ve el error 409 en el formulario.
 3. **Auxiliar**: el botón "Atender" no aparece; puede cancelar. *Personal* no está en el menú y `/portal/personal` redirige.
 4. **Veterinario**: la agenda arranca filtrada en él; marca la cita como atendida.
-5. **Cliente** (registro público): solo ve sus mascotas y citas; agenda una cita para su mascota y la cancela.
+5. **Cliente** (registro público): solo ve sus mascotas y citas, en modo lectura; no ve botones de crear, editar, agendar ni cancelar.
 6. Cerrar sesión, o borrar la cookie y recargar `/portal/agenda` → redirige a `/login?returnUrl=…`.
 7. Revisar en móvil (375 px) que el sidebar colapse.
